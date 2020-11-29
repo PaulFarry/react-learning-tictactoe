@@ -20,18 +20,16 @@ class Board extends React.Component {
             squares: Array(9).fill(null),
             currentTurn: 'X',
         };
-
     }
 
     handleClick(i) {
         const squares = this.state.squares.slice();
-        if (squares[i] === null) {
-            squares[i] = this.state.currentTurn;
-            this.setState({
-                squares: squares,
-                currentTurn: this.state.currentTurn === 'X' ? 'O' : 'X',
-            });
-        }
+        if (calculateWinner(squares) || squares[i]) { return; }
+        squares[i] = this.state.currentTurn;
+        this.setState({
+            squares: squares,
+            currentTurn: this.state.currentTurn === 'X' ? 'O' : 'X',
+        });
     }
 
     renderSquare(i) {
@@ -42,8 +40,14 @@ class Board extends React.Component {
     }
 
     render() {
-        const status = 'Next player: ' + this.state.currentTurn;
-
+        const winner = calculateWinner(this.state.squares);
+        let status;
+        if (winner) {
+          status = 'Winner: ' + winner;
+        } else {
+          status = 'Next player: ' + this.state.currentTurn;
+        }
+        
         return (
             <div>
                 <div className="status">{status}</div>
@@ -89,3 +93,23 @@ ReactDOM.render(
     <Game />,
     document.getElementById('root')
 );
+
+function calculateWinner(squares) {
+    const positions = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8], //diagonal top left to bottom right
+        [2, 4, 6], //diagonal top right to bottom left
+    ];
+    for (let i = 0; i < positions.length; i++) {
+        const [a, b, c] = positions[i];
+        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+            return squares[a];
+        }
+    }
+    return null;
+}
